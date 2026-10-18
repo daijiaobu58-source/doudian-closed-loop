@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>抖店电商闭环运营工作流 · 开源技能包</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%231a1a1a'/%3E%3Cpath d='M7 12h10M12 7l5 5-5 5' stroke='%23ff5a2c' stroke-width='2.2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<style>
+  :root{
+    --ink:#161616; --paper:#ffffff; --soft:#f6f4f1;
+    --accent:#ff5a2c; --accent-ink:#ffffff;
+    --line:#e5e2dd; --muted:#6b675f;
+    --code-bg:#232323; --code-ink:#f2efe9;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:"PingFang SC","Microsoft YaHei","Noto Sans SC",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    color:var(--ink); background:var(--paper); line-height:1.65;
+  }
+  .wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+
+  /* ===== Header ===== */
+  header.site{
+    position:sticky;top:0;z-index:20;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--line);
+  }
+  .nav{display:flex;align-items:center;justify-content:space-between;height:60px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:16px}
+  .brand svg{width:26px;height:26px}
+  .nav a.link{color:var(--muted);text-decoration:none;font-size:14px}
+  .nav a.link:hover{color:var(--accent)}
+
+  /* ===== Hero ===== */
+  .hero{padding:72px 0 56px;text-align:center}
+  .kicker{
+    display:inline-block;font-size:13px;letter-spacing:.06em;color:var(--muted);
+    border:1px solid var(--line);border-radius:999px;padding:5px 14px;margin-bottom:22px;
+  }
+  .hero h1{
+    font-size:44px;line-height:1.2;font-weight:800;letter-spacing:-.01em;max-width:760px;margin:0 auto;
+  }
+  .hero h1 em{font-style:normal;color:var(--accent)}
+  .hero .sub{margin:18px auto 0;max-width:600px;color:var(--muted);font-size:17px}
+  .hero .cta{margin-top:34px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+  .btn{
+    display:inline-flex;align-items:center;gap:8px;padding:12px 22px;border-radius:10px;
+    font-size:15px;font-weight:600;text-decoration:none;border:1px solid transparent;cursor:pointer;
+  }
+  .btn.primary{background:var(--accent);color:var(--accent-ink)}
+  .btn.primary:hover{filter:brightness(.94)}
+  .btn.ghost{border-color:var(--line);color:var(--ink);background:var(--paper)}
+  .btn.ghost:hover{border-color:var(--ink)}
+  .hero .meta{margin-top:26px;font-size:13px;color:var(--muted)}
+
+  /* ===== Closed loop visual ===== */
+  .loop{background:var(--code-bg);color:var(--code-ink);border-radius:18px;padding:40px 20px;margin:8px 0 0}
+  .loop .cap{text-align:center;font-size:13px;color:#a9a49a;margin-bottom:18px}
+  .ring{display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap;max-width:920px;margin:0 auto}
+  .node{
+    background:#303030;border:1px solid #434343;border-radius:12px;padding:12px 18px;min-width:108px;
+    text-align:center;
+  }
+  .node b{display:block;font-size:15px;color:#fff}
+  .node span{display:block;font-size:11.5px;color:#a9a49a;margin-top:3px}
+  .node.hot{background:#3a241d;border-color:#ff5a2c55}
+  .node.hot b{color:#ff8a66}
+  .arrow{color:#ff5a2c;font-size:18px;flex-shrink:0}
+  .back{text-align:center;margin-top:14px;font-size:12.5px;color:#8d887e}
+
+  /* ===== Sections ===== */
+  section{padding:64px 0 8px}
+  .sec-head{margin-bottom:28px}
+  .sec-head h2{font-size:28px;font-weight:800;letter-spacing:-.01em}
+  .sec-head p{color:var(--muted);font-size:15px;margin-top:8px;max-width:640px}
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+  .card{
+    border:1px solid var(--line);border-radius:14px;padding:20px 18px;background:var(--paper);
+  }
+  .card .n{
+    font-size:12px;font-weight:700;color:var(--accent);letter-spacing:.08em;
+  }
+  .card h3{font-size:16px;margin:8px 0 6px}
+  .card p{font-size:13.5px;color:var(--muted)}
+  .card .gate{margin-top:10px;font-size:12.5px;color:var(--ink);background:var(--soft);border-radius:8px;padding:8px 10px}
+  .card .gate b{color:var(--accent)}
+
+  /* install */
+  .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+  .tab{
+    border:1px solid var(--line);background:var(--paper);color:var(--muted);
+    padding:9px 18px;border-radius:999px;font-size:14px;cursor:pointer;
+  }
+  .tab.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .panel{
+    display:none;border:1px solid var(--line);border-radius:14px;padding:22px;
+  }
+  .panel.show{display:block}
+  .panel h3{font-size:17px;margin-bottom:12px}
+  .panel p{font-size:14px;color:var(--muted);margin-bottom:14px}
+  pre{
+    background:var(--code-bg);color:var(--code-ink);border-radius:10px;padding:16px 18px;
+    font-size:13px;line-height:1.7;overflow-x:auto;font-family:"JetBrains Mono","SFMono-Regular",Consolas,monospace;
+  }
+  pre code{white-space:pre}
+  .panel ul{margin:12px 0 0 18px;font-size:14px}
+  .panel li{margin-bottom:6px}
+
+  /* principles */
+  .princ{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  .princ .card{border-left:3px solid var(--accent)}
+
+  /* footer */
+  footer{border-top:1px solid var(--line);margin-top:64px;padding:34px 0 46px;color:var(--muted);font-size:13px}
+  footer .row{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}
+
+  @media (max-width:768px){
+    .hero{padding:52px 0 40px}
+    .hero h1{font-size:31px}
+    .grid{grid-template-columns:repeat(2,1fr)}
+    .princ{grid-template-columns:1fr}
+    .ring{gap:4px}
+    .node{min-width:86px;padding:10px 12px}
+    .node b{font-size:13.5px}
+    .arrow{font-size:14px}
+  }
+  @media (max-width:500px){
+    .grid{grid-template-columns:1fr}
+    .nav a.link{display:none}
+  }
+</style>
+</head>
+<body>
+
+<header class="site">
+  <div class="wrap nav">
+    <div class="brand">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="6" fill="#1a1a1a"/><path d="M7 12h10M12 7l5 5-5 5" stroke="#ff5a2c" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      抖店闭环运营工作流
+    </div>
+    <a class="link" href="#install">安装</a>
+    <a class="link" href="#docs">文档</a>
+    <a class="link" href="#principles">原则</a>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ===== Hero ===== -->
+  <div class="hero">
+    <span class="kicker">开源 · 品类无关 · 零依赖</span>
+    <h1>抖店运营，不再靠感觉。<br>把资深操盘手的打法，装进你的 <em>AI</em></h1>
+    <p class="sub">选品 → 上架 → 优化 → 推广 → 复盘 → 再选品，六节点闭环 + 四阶段打法 + 三道决策门。纯提示词技能包，可部署到豆包、Claude Code、CodeX 或任何支持 Skills 的 AI 工具。</p>
+    <div class="cta">
+      <a class="btn primary" href="zip/抖店闭环运营工作流_技能包_v2.0.zip" download>下载技能包 zip</a>
+      <a class="btn ghost" href="https://4m8z7g9zqbunv.doubao.link/app/app_17g7xdk494v" target="_blank" rel="noopener">在线体验网页版</a>
+    </div>
+    <div class="meta">首次使用只需回答 4 个问题：类目 / 价格带 / 供应链 / 月推广预算</div>
+  </div>
+
+  <!-- ===== Closed loop ===== -->
+  <div class="loop">
+    <div class="cap">核心闭环 · 复盘结论硬约束下一轮选品</div>
+    <div class="ring" id="ring">
+      <div class="node hot"><b>选品</b><span>≥5 候选 · 全口径毛利</span></div>
+      <span class="arrow">→</span>
+      <div class="node"><b>上架</b><span>标题/SKU/资质</span></div>
+      <span class="arrow">→</span>
+      <div class="node"><b>优化</b><span>分渠道漏斗诊断</span></div>
+      <span class="arrow">→</span>
+      <div class="node"><b>推广</b><span>素材+千川+达人</span></div>
+      <span class="arrow">→</span>
+      <div class="node"><b>复盘</b><span>归因树+沉淀</span></div>
+      <span class="arrow">→</span>
+      <div class="node hot"><b>再选品</b><span>避开黑名单·复用爆品要素</span></div>
+    </div>
+    <div class="back">三道决策门：选品→上架 · 上架→推广 · 推广→复盘，数据不够就拦下来</div>
+  </div>
+
+  <!-- ===== Stages & gates ===== -->
+  <section id="stages">
+    <div class="sec-head">
+      <h2>四阶段打法，不是一套流程打天下</h2>
+      <p>店铺在不同阶段，各节点权重和动作完全不同。</p>
+    </div>
+    <div class="grid">
+      <div class="card">
+        <div class="n">0-30 天</div><h3>起号期</h3>
+        <p>跑通 1-2 个品 + 素材模型 + 体验分≥4.5。3 天复盘节奏，先内容撬自然流。</p>
+      </div>
+      <div class="card">
+        <div class="n">31-90 天</div><h3>放量期</h3>
+        <p>爆品放量，ROI ≥ 保本×1.3。素材验证后再进千川，周复盘。</p>
+      </div>
+      <div class="card">
+        <div class="n">91-180 天</div><h3>稳定期</h3>
+        <p>稳量 + 降佣 + 新品接力防断档，月复盘。</p>
+      </div>
+      <div class="card">
+        <div class="n">随时</div><h3>清仓迭代期</h3>
+        <p>清仓价 / 直播清仓 / 组合优惠，整批品复盘沉淀。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Install ===== -->
+  <section id="install">
+    <div class="sec-head">
+      <h2>三分钟装好，开始用</h2>
+      <p>技能包是纯文本知识包：不装程序、不碰店铺后台。三种安装位，内容一致。</p>
+    </div>
+    <div class="tabs">
+      <button class="tab on" data-t="doubao" type="button">豆包专业版</button>
+      <button class="tab" data-t="claude" type="button">Claude Code</button>
+      <button class="tab" data-t="codex" type="button">CodeX / Codex CLI</button>
+      <button class="tab" data-t="other" type="button">其他 AI 工具</button>
+    </div>
+
+    <div class="panel show" id="p-doubao">
+      <h3>豆包专业版（推荐，体验最完整）</h3>
+      <p>把技能包文件夹放进豆包的技能目录，新开对话即可。</p>
+      <pre><code>1. 把 skills/doubao-doudian-closed-loop 整个文件夹
+   放进豆包的「技能存放目录」（设置-技能 可查看）
+2. 重新打开对话窗口，让系统重新扫描技能
+3. 输入：用抖店闭环运营工作流
+4. 回答 4 个初始化问题，即可开始</code></pre>
+    </div>
+
+    <div class="panel" id="p-claude">
+      <h3>Claude Code</h3>
+      <p>克隆本仓库后，把技能放进项目的 .claude/skills/ 目录（或用 Add Skill 添加）。</p>
+      <pre><code>git clone &lt;本仓库地址&gt; &amp;&amp; cd &lt;你的项目&gt;
+mkdir -p .claude/skills
+cp -r &lt;仓库&gt;/.claude/skills/doubao-doudian-closed-loop .claude/skills/
+# 然后在 Claude Code 里输入：
+# 用抖店闭环运营工作流</code></pre>
+      <ul>
+        <li>仓库根目录的 CLAUDE.md 已写好入口指引，clone 到项目后自动生效</li>
+        <li>记忆库《XX店铺_记忆库.md》自动生成在你的项目目录</li>
+      </ul>
+    </div>
+
+    <div class="panel" id="p-codex">
+      <h3>CodeX / Codex CLI（OpenAI）</h3>
+      <p>把 AGENTS.md 和技能文件夹放进项目，Codex 进入项目时自动读取。</p>
+      <pre><code>cp &lt;仓库&gt;/AGENTS.md ./AGENTS.md
+mkdir -p .codex/skills
+cp -r &lt;仓库&gt;/.codex/skills/doubao-doudian-closed-loop .codex/skills/
+# 然后在 Codex 里输入：
+# 用抖店闭环运营工作流</code></pre>
+      <ul>
+        <li>AGENTS.md 已包含节点路由、决策门、记忆库协议与关键公式</li>
+      </ul>
+    </div>
+
+    <div class="panel" id="p-other">
+      <h3>其他支持技能的 AI 工具 / 最快试用</h3>
+      <p>把 SKILL.md 全文粘贴进「技能 / 自定义指令」配置；或直接把正文粘到对话里当角色设定。</p>
+      <pre><code>文件位置（三处内容一致）：
+- skills/doubao-doudian-closed-loop/SKILL.md        （通用）
+- references/node-output-specs.md                    （六节点输出标准）
+- assets/memory-template.md                          （记忆库模板）
+粘贴后说一句「用抖店闭环运营工作流」即可</code></pre>
+    </div>
+  </section>
+
+  <!-- ===== Docs ===== -->
+  <section id="docs">
+    <div class="sec-head">
+      <h2>文档与教学</h2>
+      <p>不会用？有 10 课分步操作教程，零基础跟着做就能跑通第一个闭环。</p>
+    </div>
+    <div class="grid" style="grid-template-columns:repeat(2,1fr)">
+      <a class="card" style="text-decoration:none;color:inherit" href="docs/安装部署指南_v2.md">
+        <h3>安装部署指南 v2</h3>
+        <p>五种安装方式详解 + 初始化 4 问 + 飞书表格数据中枢（可选进阶）。</p>
+      </a>
+      <a class="card" style="text-decoration:none;color:inherit" href="docs/操作教程_新手从零到会用.md">
+        <h3>操作教程 · 新手从零到会用</h3>
+        <p>10 课：安装 → 认识工作流 → 五个节点逐个教 → 数据维护 → 合规红线 → 指令速查表。</p>
+      </a>
+    </div>
+  </section>
+
+  <!-- ===== Principles ===== -->
+  <section id="principles">
+    <div class="sec-head">
+      <h2>数据纪律与合规边界</h2>
+      <p>这是刻意设计的安全边界，不是功能缺失。</p>
+    </div>
+    <div class="princ">
+      <div class="card">
+        <h3>数据不造假</h3>
+        <p>AI 没有你的店铺后台权限。所有数字来自你提供、可复现数据源（巨量算数 / 罗盘 / 精选联盟 / 飞瓜），或明确标注「假设依据」。</p>
+      </div>
+      <div class="card">
+        <h3>写操作必须人工确认</h3>
+        <p>上架 / 改价 / 投放 / 回复消息，AI 只给方案，由你在后台操作。刷单、改评价、站外导流明令禁止。</p>
+      </div>
+      <div class="card">
+        <h3>合规红线自动拦截</h3>
+        <p>极限词 / 功效宣称 / 价格 / 诱导话术 / 资质 / 违禁品类六类红线，每次输出前自动扫描。</p>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap row">
+    <span>抖店电商闭环运营工作流 · 开源技能包（MIT License）</span>
+    <span>仓库结构：skills/ · .claude/skills/ · .codex/skills/ · AGENTS.md · CLAUDE.md · docs/ · zip/</span>
+  </div>
+  <div class="wrap" style="margin-top:8px">
+    免责声明：本技能提供运营方法论与流程框架，不构成投资建议或收益承诺。所有决策请结合你店铺的真实数据与平台规则。
+  </div>
+</footer>
+
+<script>
+(function(){
+  var tabs = document.querySelectorAll('.tab');
+  var panels = {
+    doubao: document.getElementById('p-doubao'),
+    claude: document.getElementById('p-claude'),
+    codex: document.getElementById('p-codex'),
+    other: document.getElementById('p-other')
+  };
+  tabs.forEach(function(t){
+    t.addEventListener('click', function(){
+      tabs.forEach(function(x){x.classList.remove('on')});
+      t.classList.add('on');
+      Object.keys(panels).forEach(function(k){
+        panels[k].classList.toggle('show', k === t.dataset.t);
+      });
+    });
+  });
+})();
+</script>
+</body>
+</html>

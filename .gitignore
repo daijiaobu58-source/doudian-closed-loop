@@ -1,0 +1,16 @@
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+
+# 临时文件
+.tmp-tool-results/
+*.log
+
+# 本地记忆库（用户隐私数据，不入库）
+*_记忆库.md
+
+# html 自检产物（不入库）
+docs/_shots/
